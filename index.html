@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>رفع الملفات</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      width: 100%;
+      max-width: 540px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1a202c;
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #718096;
+      font-size: 0.95rem;
+      margin-bottom: 32px;
+    }
+
+    .drop-zone {
+      border: 2px dashed #a0aec0;
+      border-radius: 12px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s;
+      background: #f7fafc;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: #4299e1;
+      background: #ebf8ff;
+    }
+
+    .drop-zone .icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    .drop-zone p {
+      color: #4a5568;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .drop-zone .hint {
+      color: #a0aec0;
+      font-size: 0.85rem;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .btn-select {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 10px 24px;
+      background: #4299e1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-select:hover {
+      background: #3182ce;
+    }
+
+    #fileList {
+      margin-top: 24px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .file-icon {
+      font-size: 1.4rem;
+    }
+
+    .file-name {
+      color: #2d3748;
+      font-size: 0.9rem;
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    .file-size {
+      color: #a0aec0;
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+
+    .file-remove {
+      background: none;
+      border: none;
+      color: #fc8181;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+
+    .file-remove:hover {
+      color: #e53e3e;
+    }
+
+    .progress-bar-wrap {
+      background: #e2e8f0;
+      border-radius: 4px;
+      height: 6px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: #48bb78;
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .btn-upload {
+      display: block;
+      width: 100%;
+      margin-top: 24px;
+      padding: 14px;
+      background: #38a169;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-upload:disabled {
+      background: #a0aec0;
+      cursor: not-allowed;
+    }
+
+    .btn-upload:not(:disabled):hover {
+      background: #2f855a;
+    }
+
+    #statusMsg {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 0.9rem;
+      min-height: 20px;
+    }
+
+    .status-success {
+      color: #38a169;
+    }
+
+    .status-error {
+      color: #e53e3e;
+    }
+
+    .status-info {
+      color: #3182ce;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📂 رفع الملفات</h1>
+    <p class="subtitle">اسحب وأفلت الملفات هنا أو اضغط لاختيارها</p>
+
+    <div class="drop-zone" id="dropZone">
+      <div class="icon">☁️</div>
+      <p>اسحب الملفات وأفلتها هنا</p>
+      <span class="hint">أو</span>
+      <br />
+      <button class="btn-select" type="button" onclick="document.getElementById('fileInput').click()">
+        اختر الملفات
+      </button>
+      <input type="file" id="fileInput" multiple />
+    </div>
+
+    <div id="fileList"></div>
+
+    <button class="btn-upload" id="uploadBtn" disabled>
+      ⬆️ رفع الملفات
+    </button>
+
+    <div id="statusMsg"></div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const statusMsg = document.getElementById('statusMsg');
+
+    let selectedFiles = [];
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function getFileIcon(name) {
+      const ext = name.split('.').pop().toLowerCase();
+      const icons = {
+        pdf: '📄', doc: '📝', docx: '📝', xls: '📊', xlsx: '📊',
+        ppt: '📑', pptx: '📑', jpg: '🖼️', jpeg: '🖼️', png: '🖼️',
+        gif: '🖼️', svg: '🖼️', mp4: '🎥', mp3: '🎵', zip: '🗜️',
+        rar: '🗜️', txt: '📃', html: '🌐', css: '🎨', js: '⚙️',
+        json: '🔧', py: '🐍',
+      };
+      return icons[ext] || '📎';
+    }
+
+    function renderFiles() {
+      fileList.innerHTML = '';
+      selectedFiles.forEach((file, index) => {
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        item.innerHTML = `
+          <div class="file-info">
+            <span class="file-icon">${getFileIcon(file.name)}</span>
+            <div>
+              <div class="file-name">${file.name}</div>
+              <div class="file-size">${formatSize(file.size)}</div>
+              <div class="progress-bar-wrap" id="progress-wrap-${index}" style="display:none">
+                <div class="progress-bar" id="progress-${index}"></div>
+              </div>
+            </div>
+          </div>
+          <button class="file-remove" title="إزالة" onclick="removeFile(${index})">✕</button>
+        `;
+        fileList.appendChild(item);
+      });
+      uploadBtn.disabled = selectedFiles.length === 0;
+    }
+
+    function addFiles(files) {
+      Array.from(files).forEach(file => {
+        if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+          selectedFiles.push(file);
+        }
+      });
+      renderFiles();
+      statusMsg.textContent = '';
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      renderFiles();
+    }
+
+    fileInput.addEventListener('change', () => addFiles(fileInput.files));
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      addFiles(e.dataTransfer.files);
+    });
+
+    uploadBtn.addEventListener('click', () => {
+      if (selectedFiles.length === 0) return;
+
+      uploadBtn.disabled = true;
+      statusMsg.className = 'status-info';
+      statusMsg.textContent = 'جارٍ الرفع...';
+
+      let completed = 0;
+
+      selectedFiles.forEach((file, index) => {
+        const progressWrap = document.getElementById(`progress-wrap-${index}`);
+        const progressBar = document.getElementById(`progress-${index}`);
+        if (progressWrap) progressWrap.style.display = 'block';
+
+        // Simulate upload progress
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += Math.random() * 20 + 5;
+          if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            if (progressBar) progressBar.style.background = '#48bb78';
+            completed++;
+            if (completed === selectedFiles.length) {
+              statusMsg.className = 'status-success';
+              statusMsg.textContent = `✅ تم رفع ${selectedFiles.length} ملف بنجاح!`;
+              uploadBtn.disabled = false;
+            }
+          }
+          if (progressBar) progressBar.style.width = progress + '%';
+        }, 150);
+      });
+    });
+  </script>
+</body>
+</html>
