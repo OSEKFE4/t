@@ -250,8 +250,12 @@
       return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
 
+    const MAX_PROGRESS_INCREMENT = 20;
+    const MIN_PROGRESS_INCREMENT = 5;
+
     function getFileIcon(name) {
-      const ext = name.split('.').pop().toLowerCase();
+      const dotIndex = name.lastIndexOf('.');
+      const ext = dotIndex !== -1 ? name.slice(dotIndex + 1).toLowerCase() : '';
       const icons = {
         pdf: '📄', doc: '📝', docx: '📝', xls: '📊', xlsx: '📊',
         ppt: '📑', pptx: '📑', jpg: '🖼️', jpeg: '🖼️', png: '🖼️',
@@ -334,7 +338,7 @@
         // Simulate upload progress
         let progress = 0;
         const interval = setInterval(() => {
-          progress += Math.random() * 20 + 5;
+          progress += Math.random() * MAX_PROGRESS_INCREMENT + MIN_PROGRESS_INCREMENT;
           if (progress >= 100) {
             progress = 100;
             clearInterval(interval);
